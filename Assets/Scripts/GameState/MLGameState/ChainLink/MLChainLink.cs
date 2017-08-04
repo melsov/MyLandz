@@ -56,7 +56,7 @@ public class ChainLinkDataEditor : Editor
 [System.Serializable]
 public struct ChainLinkData
 {
-    private MLGameState caller;
+    private MLGameState caller; 
     public MLNumericParam getData() {
         return caller.param;
     }
