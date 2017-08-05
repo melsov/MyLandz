@@ -4,24 +4,18 @@ using UnityEngine;
 
 public class MLUpdaterSet : MonoBehaviour {
 
-    //[SerializeField, Header("If None, Searches self and children")]
-    //private MLGameStateParamUpdater[] _updaters;
     [SerializeField, Header("If None, searches self and children")]
     private List<MLGameStateParamUpdater> _updaters;
     private List<MLGameStateParamUpdater> updaters {
         get {
             if (_updaters == null || _updaters.Count == 0) {
-                //if (_updaters == null || _updaters.Length == 0) {
-                    _updaters = findUpdatersRespectSubSets(); //.ToArray();
-                //}
-                //lUpdaters = new List<MLGameStateParamUpdater>(_updaters);
+                    _updaters = findUpdatersRespectSubSets(); 
             }
             return _updaters;
-            //return lUpdaters;
         }
     }
 
-    //Searches self and children. Adds any MLGameStateParamUpdaters.
+    //Adds any MLGameStateParamUpdaters in self and children
     //Except if child has an MLUpdaterSet component
     private List<MLGameStateParamUpdater> findUpdatersRespectSubSets() {
         List<MLGameStateParamUpdater> result = new List<MLGameStateParamUpdater>();
@@ -47,12 +41,11 @@ public class MLUpdaterSet : MonoBehaviour {
 
     public void setUpdaters(params MLGameStateParamUpdater[] _updaters) {
         this._updaters = new List<MLGameStateParamUpdater>(_updaters);
-        //lUpdaters = new List<MLGameStateParamUpdater>(this._updaters);
     }
 
     public void Invoke() {
         foreach(MLGameStateParamUpdater updater in updaters) {
-            updater.enforceNext();
+            updater.invokeNext();
         }
     }
 

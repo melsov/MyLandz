@@ -1,36 +1,41 @@
 ﻿using UnityEngine;
 using System.Collections.Generic;
 using UnityEditor;
+using UnityEngine.Assertions;
 
-[CustomEditor(typeof(MLChainLink))]
-public class ChainLinkDataEditor : Editor
-{
-    public string[] options = { "elf", "dwarf", "human" };
-    public int index = 0;
-    public int sliderVal = 3;
-    public float knobVal = 2f;
-    public override void OnInspectorGUI() {
-        //TESTS
-        base.OnInspectorGUI();
-        MLChainLink cl = (MLChainLink)target;
-        EditorGUILayout.LabelField("Flow", cl.flow.ToString());
-        EditorGUILayout.BeginToggleGroup("Flow is great", cl.flow > 1);
-        {
-            EditorGUILayout.LabelField("flowing");
-        }
-        EditorGUILayout.EndToggleGroup();
+//[CustomEditor(typeof(MLChainLink))]
+//public class ChainLinkDataEditor : Editor
+//{
+//    public string[] options = { "elf", "dwarf", "human" };
+//    public int index = 0;
+//    public int sliderVal = 3;
+//    public float knobVal = 2f;
+//    public override void OnInspectorGUI() {
+//        //TESTS
+//        base.OnInspectorGUI();
+//        MLChainLink cl = (MLChainLink)target;
+//        EditorGUILayout.LabelField("Flow", cl.flow.ToString());
+//        EditorGUILayout.BeginToggleGroup("Flow is great", cl.flow > 1);
+//        {
+//            EditorGUILayout.LabelField("flowing");
+//        }
+//        EditorGUILayout.EndToggleGroup();
 
-        //popup
-        index = EditorGUILayout.Popup(index, options);
-        if(index==1) {
-            EditorGUILayout.LabelField("chose dwarf");
-        } else {
-            sliderVal = EditorGUILayout.IntSlider(sliderVal, 0, 6);
-            knobVal = EditorGUILayout.Knob(Vector2.one * 55f, knobVal, 1.2f, 4.8f, "gzurbs", Color.red, Color.green, true);
-        }
+//        if(GUILayout.Button("Test B")) {
+//            Debug.Log("test b");
+//        }
 
-    }
-}
+//        //popup
+//        index = EditorGUILayout.Popup(index, options);
+//        if(index==1) {
+//            EditorGUILayout.LabelField("chose dwarf");
+//        } else {
+//            sliderVal = EditorGUILayout.IntSlider(sliderVal, 0, 6);
+//            knobVal = EditorGUILayout.Knob(Vector2.one * 55f, knobVal, 1.2f, 4.8f, "gzurbs", Color.red, Color.green, true);
+//        }
+
+//    }
+//}
 
 //public enum ParamConversionType
 //{
@@ -66,16 +71,56 @@ public struct ChainLinkData
     }
 }
 
+[System.Serializable]
+public struct ParamCondition
+{
+    public enum ConditionType
+    {
+        PASS_ANY, ONLY_TRUE
+    }
+
+    public ConditionType type;
+
+    public bool doesPass(MLNumericParam param) {
+        switch(type) {
+            case ConditionType.PASS_ANY:
+            default:
+                return true;
+            case ConditionType.ONLY_TRUE:
+                return param == true;
+        }
+    }
+}
+
+[System.Serializable]
+public struct LinkFilter
+{
+    public MLNumericParam filter(MLNumericParam param) {
+        return param;
+    }
+}
+
 public class MLChainLink : MonoBehaviour
 {
-    public int fake;
-    public float flow { get { return fake / 2f; } }
-
     [SerializeField]
-    MLGameState target;
+    protected ParamCondition condition;
+    [SerializeField]
+    protected LinkFilter filter;
+    [SerializeField, Header("If none, this")]
+    protected MLGameState _target;
+    protected MLGameState target_ {
+        get {
+            if(!_target) {
+                _target = GetComponent<MLGameState>();
+            }
+            return _target;
+        }
+    }
 
-    public void link(ChainLinkData data) {
-        target.enforce(data.getData());
+    public virtual void link(ChainLinkData data) {
+        if (condition.doesPass(data.getData())) {
+            target_.enforce(filter.filter(data.getData()));
+        }
     }
     
 }

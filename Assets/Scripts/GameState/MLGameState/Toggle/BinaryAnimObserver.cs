@@ -32,12 +32,12 @@ public class BinaryAnimObserver : AnimtorNoodler {
 	}
 
     private void setupEvent(string clipName, int param) {
-        AnimationClip open = clipNamed(clipName);
+        AnimationClip clip = clipNamed(clipName);
         AnimationEvent ae = new AnimationEvent();
         ae.functionName = "handleSwitchEvent";
         ae.intParameter = param;
-        ae.time = open.length;
-        open.AddEvent(ae);
+        ae.time = clip.length;
+        clip.AddEvent(ae);
     }
 
     public void handleSwitchEvent(int isOn) {

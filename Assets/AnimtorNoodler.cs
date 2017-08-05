@@ -2,14 +2,17 @@
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
+using UnityEngine.Assertions;
 
 public abstract class AnimtorNoodler : MonoBehaviour {
 
+    //Must have an Animator sibling component
     private Animator _animtor;
     protected Animator animtor {
         get {
             if(!_animtor) {
                 _animtor = GetComponent<Animator>();
+                Assert.IsTrue(_animtor, "AnimatorNoodler must have an Animator sibling component");
             }
             return _animtor;
         }

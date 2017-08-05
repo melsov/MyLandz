@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using UnityEngine;
+using UnityEditor;
 using UnityEngine.SceneManagement;
 
 /*
@@ -39,6 +40,47 @@ MLGameState callbacks would...
  *  */
 
 //Duks (random notes): boomerangs push the pinata back
+
+[CustomEditor(typeof(MLGameState), true)]
+public class MLGameStateDataEditor : Editor
+{
+    public override void OnInspectorGUI() {
+        
+        base.OnInspectorGUI();
+        GUIStyle style = EditorStyles.helpBox;
+        //style.normal.background. = new Color(.3f, .4f, .8f);
+        GUI.contentColor = Color.red;
+        EditorGUILayout.BeginVertical(style); // style);
+        EditorGUILayout.LabelField("----Game State Tools----");
+
+        if(GUILayout.Button("Add MLGameStateParamUpdater")) {
+            addMLGameStateParamUpdater();
+        }
+        if(GUILayout.Button("Add MLUpdaterSet")) {
+            addMLUpdaterSet();
+        }
+
+        EditorGUILayout.EndVertical();
+    }
+
+    private MLGameState mlGameState { get { return (MLGameState)target; } }
+
+    private void addMLUpdaterSet() {
+        if(mlGameState.GetComponent<MLUpdaterSet>()) {
+            Debug.Log("There already is an MLUpdaterSet");
+            return;
+        }
+        ComponentHelper.AddIfNotPresent<MLUpdaterSet>(mlGameState.transform);
+    }
+
+    private void addMLGameStateParamUpdater() {
+        if(mlGameState.GetComponent<MLGameStateParamUpdater>()) {
+            Debug.Log("There already is an MLGameStateParamUpdater attached");
+            return;
+        }
+        ComponentHelper.AddIfNotPresent<MLGameStateParamUpdater>(mlGameState.transform);
+    }
+}
 
 [System.Serializable]
 public struct MLNumericParam
@@ -103,7 +145,9 @@ public abstract class MLGameState : MonoBehaviour
         param = _mlnp;
         gameStateSaver.writeToPrefs(this);
         foreach(MLChainLink link in chainLinks) {
-            link.link(new ChainLinkData(this));
+            if (link) {
+                link.link(new ChainLinkData(this));
+            }
         }
     }
 }

@@ -1,4 +1,5 @@
-﻿using System.Collections;
+﻿using System;
+using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.Assertions;
@@ -38,7 +39,12 @@ public class IncrementableRange
     }
 }
 
-public class MLGameStateParamUpdater : MonoBehaviour {
+public interface MLUpdater
+{
+    void invokeNext();
+}
+
+public class MLGameStateParamUpdater : MonoBehaviour , MLUpdater {
 
     [SerializeField]
     public UpdateMode updateMode = UpdateMode.ONE_VALUE;
@@ -69,10 +75,6 @@ public class MLGameStateParamUpdater : MonoBehaviour {
         }
     }
 
-    public void enforceNext() {
-        mlGameState.enforce(next(mlGameState.param));
-    }
-
     protected float next(MLNumericParam param) {
         switch (updateMode) {
             case UpdateMode.ONE_VALUE:
@@ -85,8 +87,11 @@ public class MLGameStateParamUpdater : MonoBehaviour {
                 return range.next(param);
         }
     }
-    
-    
+
+    //MLUpdater
+    public void invokeNext() {
+        mlGameState.enforce(next(mlGameState.param));
+    }
 }
 
 
