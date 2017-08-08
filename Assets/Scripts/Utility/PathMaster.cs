@@ -11,7 +11,7 @@ public static class PathMaster {
 
     public static string PrefabAbsolutePath { get { return string.Format("{0}/{1}/{2}", Application.dataPath, "Resources", ResourcesRelativePrefabFolder); } }
 
-    public static string ItemPrefabAbsolutePath { get { return string.Format("{0}/{1}", PrefabAbsolutePath, "Item"); } }
+    public static string ItemPrefabAbsolutePath { get { return string.Format("{0}/Item", PrefabAbsolutePath); } }
 
     public static string ResourcesRelativePrefabFolder { get { return "Prefab"; } }
 
@@ -20,6 +20,12 @@ public static class PathMaster {
     public static string ResourcesRelativeGenerateFolder { get { return "GeneratePrefab"; } }
 
     public static string ResourcesLocal { get { return "Assets/Resources"; } }
+
+    public static string ResourcesRelGSModulePath { get { return string.Format("{0}/GSModule", ResourcesRelativePrefabFolder); } }
+
+    public static string ResourceRelPathForGSModule(string moduleName) {
+        return string.Format("{0}/{1}", ResourcesRelGSModulePath, moduleName);
+    }
 	
 }
 

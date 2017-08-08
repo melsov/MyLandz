@@ -23,9 +23,7 @@ public class SodaMachineInput : MonoBehaviour {
     private bool evaluate(string code, out MLUpdaterSet upSet) {
         upSet = null;
         foreach(CodeAndUpdater cau in codes) {
-            print("eval: " + cau.code);
             if(cau.code.ToLower().Equals(code.ToLower())) {
-                print("matches: ");
                 upSet = cau.updaterSet;
                 return true;
             }

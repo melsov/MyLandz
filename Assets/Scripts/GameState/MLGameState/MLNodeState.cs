@@ -19,5 +19,9 @@ public class MLNodeState : MLGameState
         }
     }
 
-
+#if UNITY_EDITOR
+    internal void setNodeInEditor(Node node) {
+        this.node = node;
+    }
+#endif
 }

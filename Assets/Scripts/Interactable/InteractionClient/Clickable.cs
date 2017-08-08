@@ -4,6 +4,9 @@ using System;
 
 public class Clickable : MonoBehaviour
 {
+    [SerializeField]
+    private string clickAudio = "dbl-click";
+
     private BoxXY _boxXY;
     protected BoxXY boxXY {
         get {
@@ -60,6 +63,7 @@ public class Clickable : MonoBehaviour
 
     private void click(VectorXY worldPoint) {
         if(mouseIsHoveringOverUs()) {
+            AudioManager.Instance.play(clickAudio);
             paramUpdaterSet.Invoke();
         }
     }

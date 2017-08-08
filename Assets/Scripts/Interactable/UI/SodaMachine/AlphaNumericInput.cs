@@ -51,11 +51,13 @@ public class AlphaNumericInput : MonoBehaviour {
     [SerializeField]
     private Text display;
     public Action<string, Action<bool, MLUpdaterSet>> handleInput;
-    private AudioSource aus;
+
     [SerializeField]
-    private AudioSource validCodeFeedback;
+    private string buttonPressAudio = "short-beep";
     [SerializeField]
-    private AudioSource invalidCodeFeedback;
+    private string validCodeFeedbackAudio = "correct";
+    [SerializeField]
+    private string invalideCodeFeedbackAudio = "short-record-scratch";
 
     private bool processingInput;
     [SerializeField]
@@ -70,7 +72,6 @@ public class AlphaNumericInput : MonoBehaviour {
                 b.onClick.AddListener(() => { pressed(b.GetComponentInChildren<Text>().text); });
             }
         }
-        aus = GetComponent<AudioSource>();
     }
 
     private void hide() {
@@ -83,10 +84,8 @@ public class AlphaNumericInput : MonoBehaviour {
     }
 
     private void pressed(string s) {
-        input.Add(s);// string.Format("{0}{1}", input, s);
-        if(aus) {
-            aus.Play();
-        }
+        input.Add(s);
+        AudioManager.Instance.play(buttonPressAudio);
         StartCoroutine(processInput());
     }
 
@@ -109,9 +108,9 @@ public class AlphaNumericInput : MonoBehaviour {
         if (clear) {
             processingInput = true;
             if(!upSet) {
-                invalidCodeFeedback.Play();
+                AudioManager.Instance.play(invalideCodeFeedbackAudio);
             } else {
-                validCodeFeedback.Play();
+                AudioManager.Instance.play(validCodeFeedbackAudio);
             }
             yield return new WaitForSeconds(.4f);
             display.text = emptyDisplayStr;

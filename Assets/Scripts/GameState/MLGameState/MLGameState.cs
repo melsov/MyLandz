@@ -41,6 +41,7 @@ MLGameState callbacks would...
 
 //Duks (random notes): boomerangs push the pinata back
 
+#if UNITY_EDITOR
 [CustomEditor(typeof(MLGameState), true)]
 public class MLGameStateDataEditor : Editor
 {
@@ -81,6 +82,7 @@ public class MLGameStateDataEditor : Editor
         ComponentHelper.AddIfNotPresent<MLGameStateParamUpdater>(mlGameState.transform);
     }
 }
+#endif
 
 [System.Serializable]
 public struct MLNumericParam
@@ -113,8 +115,6 @@ public struct MLNumericParam
     }
 }
 
-
-
 public abstract class MLGameState : MonoBehaviour
 {
     [SerializeField]
@@ -141,18 +141,20 @@ public abstract class MLGameState : MonoBehaviour
         get; protected set;
     }
 
+    protected virtual ChainLinkData getChainLinkDataFor(MLChainLink link) {
+        return new ChainLinkData(this);
+    }
+
     public void enforce(MLNumericParam _mlnp) {
         param = _mlnp;
         gameStateSaver.writeToPrefs(this);
         foreach(MLChainLink link in chainLinks) {
             if (link) {
-                link.link(new ChainLinkData(this));
+                link.link(getChainLinkDataFor(link));
             }
         }
     }
 }
-
-
 
 public static class HierarchyHelper
 {
@@ -161,6 +163,14 @@ public static class HierarchyHelper
         while(result.parent) {
             result = result.parent;
             yield return result;
+        }
+    }
+
+    public static IEnumerable<Transform> ParentsAndThis(Transform t) {
+        Transform result = t;
+        while (result) {
+            yield return result;
+            result = result.parent;
         }
     }
 
@@ -180,6 +190,8 @@ public static class HierarchyHelper
         result = string.Format("{0}.{1}", t.gameObject.scene, result);
         return result;
     }
+
+    
 }
 
 public static class ComponentHelper

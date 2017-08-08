@@ -4,7 +4,8 @@ using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.Assertions;
 
-public class BinaryAnimObserver : AnimtorNoodler {
+public class BinaryAnimObserver : AnimtorNoodler
+{
 
     [SerializeField]
     private string idleClip = "Idle";
@@ -17,26 +18,26 @@ public class BinaryAnimObserver : AnimtorNoodler {
     private BinaryToggle _binaryToggle;
     private BinaryToggle binaryToggle {
         get {
-            if(!_binaryToggle) {
+            if (!_binaryToggle) {
                 _binaryToggle = ComponentHelper.GetComponentOnlyInChildren<BinaryToggle>(transform);
             }
             return _binaryToggle;
         }
     }
 
-	public void Awake () {
+    public void Awake() {
         Assert.IsTrue(clipNamed(openClip) != null);
         Assert.IsTrue(clipNamed(closeClip) != null);
         setupEvent(openClip, 1);
         setupEvent(closeClip, 0);
-	}
+    }
 
     private void setupEvent(string clipName, int param) {
         AnimationClip clip = clipNamed(clipName);
         AnimationEvent ae = new AnimationEvent();
         ae.functionName = "handleSwitchEvent";
         ae.intParameter = param;
-        ae.time = clip.length;
+        ae.time = clip.length - Mathf.Min(clip.length * .05f, .05f);
         clip.AddEvent(ae);
     }
 

@@ -4,7 +4,10 @@ using UnityEngine;
 using UnityEditor;
 using UnityEngine.Assertions;
 
-public class SetActiveNode : MonoBehaviour {
+public class SetActiveNode : MonoBehaviour
+{
+    private static int COLUMNS = 6;
+
     [MenuItem("MyLandz/Set Active Node %&#a")]
     static void _setActiveNode() {
         if(!Selection.activeGameObject) { print("nothing selected"); return; }
@@ -19,13 +22,42 @@ public class SetActiveNode : MonoBehaviour {
         selected.activate();
     }
 
-	[MenuItem("MyLandz/Make New Node %&#d")]
+	[MenuItem("PrefabGen/New node from selected %&#d")]
     static void makeNewNode() {
-        int COLUMNS = 6;
-        Node[] nodes = FindObjectsOfType<Node>();
-        if(nodes.Length == 0) { print("no nodes in this scene?"); return; }
-        Transform nodeParent = nodes[0].transform.parent;
+        Node orig = HierarchyHelper.SearchUpAndDown<Node>(Selection.activeTransform);
+        if(!orig) {
+            orig = Resources.Load<Node>(PathMaster.ResourceRelPathForGSModule("TemplateNode"));
+        }
+        makeNewNode(orig, getNodeParent());
+    }
+
+    [MenuItem("PrefabGen/New node from template %&#f")]
+    private static void newNodeFromTemplate() {
+        makeNewNode(Resources.Load<Node>(PathMaster.ResourceRelPathForGSModule("TemplateNode")), getNodeParent());
+    }
+
+    private static void makeNewNode(Node orig, Transform nodeParent) {
+        Node next = Instantiate<Node>(orig);
+        next.transform.SetParent(null);
+        next.transform.position = nextOpenNodePosition();
+        next.transform.SetParent(nodeParent);
+        SelectionHelper.setSelected(next.gameObject);
+    }
+
+    private static Transform getNodeParent() {
+        Transform nodeParent = null;
+        Node anyNode = FindObjectOfType<Node>();
+        if (anyNode) {
+            nodeParent = anyNode.transform.parent;
+        }
         Assert.IsTrue(nodeParent.name.Equals("Nodes"), "Is this really the node parent: " + nodeParent.name + "?");
+        return nodeParent;
+    }
+
+    private static Vector3 nextOpenNodePosition() {
+         Node[] nodes = FindObjectsOfType<Node>();
+        if(nodes.Length == 0) { return Vector3.zero; }
+
         VectorXY lowerRight = new VectorXY(-9999f);
         VectorXY upperLeft = new VectorXY(9999f);
         foreach(Node n in nodes) {
@@ -36,14 +68,6 @@ public class SetActiveNode : MonoBehaviour {
         if(nodes.Length % COLUMNS == 0) {
             target = new Vector3(upperLeft.x, lowerRight.y - 16f, 0f);
         }
-        Node orig = HierarchyHelper.SearchUpAndDown<Node>(Selection.activeGameObject.transform);
-        if(!orig) {
-            orig = nodes[nodes.Length - 1];
-        }
-        Node next = Instantiate<Node>(orig);
-        next.transform.SetParent(null);
-        next.transform.position = target;
-        next.transform.SetParent(nodeParent);
-        
+        return target;
     }
 }

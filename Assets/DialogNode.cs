@@ -4,12 +4,13 @@ using UnityEngine;
 using UnityEditor;
 using System;
 
+#if UNITY_EDITOR
 [CustomEditor(typeof(DialogNode))]
 public class DialogNodeDataEditor : Editor
 {
     private Color normalColor = new Color(.8f, .8f, .8f);
     private Color[] bgColors = { Color.cyan, Color.green, Color.yellow, new Color(.1f, .7f, .7f) };
-    private Dictionary<DialogNode, bool> foldoutLookup = new Dictionary<DialogNode, bool>();
+    private static Dictionary<DialogNode, bool> foldoutLookup = new Dictionary<DialogNode, bool>();
 
     public override void OnInspectorGUI() {
         serializedObject.Update();
@@ -54,8 +55,9 @@ public class DialogNodeDataEditor : Editor
                 edge.label = EditorGUILayout.TextField(string.Format("EDGE {0}:", i), edge.label);
 
                 EditorGUI.indentLevel = 2;
+
                 edge.updaterSet = (MLUpdaterSet)EditorGUILayout.ObjectField(
-                    string.Format("UPDATER:"),
+                    string.Format("UPDATER: {0}", edge.dialogNode ? "(unused)" : ""),
                     edge.updaterSet,
                     typeof(MLUpdaterSet),
                     true);
@@ -78,6 +80,7 @@ public class DialogNodeDataEditor : Editor
                 if (edge.dialogNode) {
                     displayDNode(edge.dialogNode, colorIndex + 1);
                 }
+                dn.setEdge(edge, i);
             }
 
             GUI.backgroundColor = bgColors[colorIndex % bgColors.Length];
@@ -90,6 +93,7 @@ public class DialogNodeDataEditor : Editor
         }
     }
 }
+#endif
 
 [System.Serializable]
 public struct DialogEdge
@@ -142,6 +146,12 @@ public class DialogNode : MonoBehaviour {
     public string setText {
         set {
             _text = value;
+        }
+    }
+
+    public void setEdge(DialogEdge edge, int index) {
+        if(index < _edges.Length) {
+            _edges[index] = edge;
         }
     }
 

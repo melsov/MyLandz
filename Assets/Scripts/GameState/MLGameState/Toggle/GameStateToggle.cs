@@ -14,7 +14,6 @@ public class GameStateToggle : BinaryToggle
 
     public override bool state {
         set {
-            Debug.Log("got state: " + value);
             mlGameState.enforce(value);
         }
     }
