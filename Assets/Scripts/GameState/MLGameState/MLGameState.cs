@@ -113,6 +113,10 @@ public struct MLNumericParam
                 return 0f;
         }
     }
+
+    public override string ToString() {
+        return string.Format("MLNumericParam: {0}", value_);
+    }
 }
 
 public abstract class MLGameState : MonoBehaviour

@@ -31,16 +31,17 @@ public abstract class Interactable : MonoBehaviour
     //    return result;
     //}
 
-    [SerializeField, Header("If none, searches sibling components")]
-    private MLUpdaterSet _mlUpdaterSet;
-    protected MLUpdaterSet mlUpdaterSet {  //TODO: PURGE UNUSED?
-        get {
-            if (!_mlUpdaterSet) {
-                _mlUpdaterSet = ComponentHelper.AddIfNotPresent<MLUpdaterSet>(transform);
-            }
-            return _mlUpdaterSet;
-        }
-    }
+//don't need?
+    //[SerializeField, Header("If none, searches sibling components")]
+    //private MLUpdaterSet _mlUpdaterSet;
+    //protected MLUpdaterSet mlUpdaterSet {  //TODO: PURGE UNUSED?
+    //    get {
+    //        if (!_mlUpdaterSet) {
+    //            _mlUpdaterSet = ComponentHelper.AddIfNotPresent<MLUpdaterSet>(transform);
+    //        }
+    //        return _mlUpdaterSet;
+    //    }
+    //}
 
     protected abstract void OnMouseDown();
     protected abstract void OnMouseDrag();

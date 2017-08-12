@@ -76,10 +76,13 @@ public struct ParamCondition
 {
     public enum ConditionType
     {
-        PASS_ANY, ONLY_TRUE
+        PASS_ANY, ONLY_TRUE, INT_EQUALS
     }
 
     public ConditionType type;
+
+    [Header("Used with INT_EQUALS")]
+    public int equalsCondition;
 
     public bool doesPass(MLNumericParam param) {
         switch(type) {
@@ -88,15 +91,42 @@ public struct ParamCondition
                 return true;
             case ConditionType.ONLY_TRUE:
                 return param == true;
+            case ConditionType.INT_EQUALS:
+                return ((int)param) == equalsCondition;
         }
     }
 }
 
+//Optionally scale or shift (or whatever!) incoming params
 [System.Serializable]
 public struct LinkFilter
 {
+    public enum FilterType
+    {
+        PASS_AS_IS, FLOAT_TO_BOOL, SCALE_ADD, SCALE_ADD_MOD
+    }
+    [SerializeField, Header("Used with scaled and add")]
+    private float scale;
+    [SerializeField, Header("Used with scaled and add")]
+    private float add;
+    [SerializeField, Header("Used with scaled add mod")]
+    private float mod;
+
+
+    [SerializeField]
+    private FilterType type;
     public MLNumericParam filter(MLNumericParam param) {
-        return param;
+        switch(type) {
+            case FilterType.PASS_AS_IS:
+            default:
+                return param;
+            case FilterType.FLOAT_TO_BOOL:
+                return Mathf.Abs((float)param) > 0.001f ? 1f : 0f;
+            case FilterType.SCALE_ADD:
+                return param * scale + add;
+            case FilterType.SCALE_ADD_MOD:
+                return MPMath.fmod(param * scale + add, mod);
+        }
     }
 }
 
@@ -105,7 +135,8 @@ public class MLChainLink : MonoBehaviour
     [SerializeField]
     protected ParamCondition condition;
     [SerializeField]
-    protected LinkFilter filter;
+    private LinkFilter filter;
+    
     [SerializeField, Header("If none, this")]
     protected MLGameState _target;
     protected MLGameState target_ {
@@ -119,7 +150,10 @@ public class MLChainLink : MonoBehaviour
 
     public virtual void link(ChainLinkData data) {
         if (condition.doesPass(data.getData())) {
-            target_.enforce(filter.filter(data.getData()));
+            MLNumericParam passOn = filter.filter(data.getData());
+            Debug.Log("pass on data: " + passOn.ToString());
+            target_.enforce(passOn);
+            //target_.enforce(filter.filter(data.getData()));
         }
     }
     

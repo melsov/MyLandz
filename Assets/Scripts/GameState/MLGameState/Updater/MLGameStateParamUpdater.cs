@@ -10,6 +10,7 @@ public enum UpdateMode
     TOGGLE_VALUE,
     INCREMENT_LOOP,
     INCREMENT_PING_PONG,
+    USE_Z_ROTATION,
 //TODO: ADD INCREMENT ONCE
 }
 
@@ -85,6 +86,8 @@ public class MLGameStateParamUpdater : MonoBehaviour , MLUpdater {
             case UpdateMode.INCREMENT_LOOP:
             case UpdateMode.INCREMENT_PING_PONG:
                 return range.next(param);
+            case UpdateMode.USE_Z_ROTATION:
+                return mlGameState.transform.rotation.eulerAngles.z;
         }
     }
 

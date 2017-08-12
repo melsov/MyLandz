@@ -29,8 +29,8 @@ public struct VectorXY  {
         return vector3(0);
     }
 
-    public Vector3 vector3(float y) {
-        return new Vector3(v.x, y, v.y);
+    public Vector3 vector3(float z) {
+        return new Vector3(v.x, v.y, z);
     }
 
     public Vector2 toVector2 {
@@ -38,6 +38,13 @@ public struct VectorXY  {
             return v;
         }
     }
+
+    public VectorXY swapped {
+        get {
+            return new VectorXY(v.y, v.x);
+        }
+    }
+
 
     public float magnitudeSquared {
         get { return v.x * v.x + v.y * v.y; }
@@ -96,6 +103,21 @@ public struct VectorXY  {
 
     public bool sympatheticDirection(VectorXY other) {
         return dot(other) > 0f;
+    }
+
+    public float angleDegrees() {
+        return angleRadians() * Mathf.Rad2Deg;
+    }
+
+    public float angleRadians() {
+        //swapping components so that the resulting angle "a" satisfies:
+        // (cos(a), sin(a)) == this vector normalized
+        VectorXY p_vector2 = swapped; 
+        if (p_vector2.x < 0) {
+            return Mathf.PI * 2f - Mathf.Atan2(p_vector2.x, p_vector2.y) * -1f;
+        } else {
+            return Mathf.Atan2(p_vector2.x, p_vector2.y);
+        }
     }
 
     public static VectorXY operator +(VectorXY a, VectorXY b) {

@@ -14,7 +14,6 @@ class MLPresentAndAcquireItemAction : MLAcquireItemAction
     }
     protected override void performStaticAction(MLNumericParam value) {
         presenter.present(item.srendrr, () => {
-            print("getting item");
             base.performStaticAction(value);
         });
     }

@@ -28,20 +28,23 @@ public class SetActiveNode : MonoBehaviour
         if(!orig) {
             orig = Resources.Load<Node>(PathMaster.ResourceRelPathForGSModule("TemplateNode"));
         }
-        makeNewNode(orig, getNodeParent());
+        Node next = makeNewNode(orig, getNodeParent());
     }
 
     [MenuItem("PrefabGen/New node from template %&#f")]
     private static void newNodeFromTemplate() {
-        makeNewNode(Resources.Load<Node>(PathMaster.ResourceRelPathForGSModule("TemplateNode")), getNodeParent());
+        Node next = makeNewNode(Resources.Load<Node>(PathMaster.ResourceRelPathForGSModule("TemplateNode")), getNodeParent());
+        SpriteRenderer sr = next.GetComponentInChildren<SpriteRenderer>();
+        SelectionHelper.setSelected(sr.gameObject);
     }
 
-    private static void makeNewNode(Node orig, Transform nodeParent) {
+    private static Node makeNewNode(Node orig, Transform nodeParent) {
         Node next = Instantiate<Node>(orig);
         next.transform.SetParent(null);
         next.transform.position = nextOpenNodePosition();
         next.transform.SetParent(nodeParent);
         SelectionHelper.setSelected(next.gameObject);
+        return next;
     }
 
     private static Transform getNodeParent() {

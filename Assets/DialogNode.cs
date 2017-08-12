@@ -1,10 +1,10 @@
 ﻿using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
-using UnityEditor;
 using System;
 
 #if UNITY_EDITOR
+using UnityEditor;
 [CustomEditor(typeof(DialogNode))]
 public class DialogNodeDataEditor : Editor
 {
@@ -43,7 +43,7 @@ public class DialogNodeDataEditor : Editor
 
             dn.setText = EditorGUILayout.TextArea(dn.text, GUILayout.MinHeight(60));
 
-            List<DialogEdge> edges = new List<DialogEdge>(dn.edges());
+            List<DialogEdge> edges = new List<DialogEdge>(dn.getEdges());
 
             for (int i = 0; i < edges.Count; ++i) {
 
@@ -128,9 +128,17 @@ public class DialogNode : MonoBehaviour {
 
     [SerializeField]
     private DialogEdge[] _edges;
+    private DialogEdge[] edges {
+        get {
+            if (_edges == null) {
+                _edges = new DialogEdge[1];
+            }
+            return _edges;
+        }
+    }
 
-    public IEnumerable<DialogEdge> edges() {
-        foreach(DialogEdge de in _edges) { yield return de; }
+    public IEnumerable<DialogEdge> getEdges() {
+        foreach(DialogEdge de in edges) { yield return de; }
     }
 
     public int Length { get { return _edges.Length; } }

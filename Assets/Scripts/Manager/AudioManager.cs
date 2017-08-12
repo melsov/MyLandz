@@ -35,9 +35,13 @@ public class AudioManager : PhoenixLikeSingleton<AudioManager> {
     /// </summary>
     /// <param name="resourceAudioRelativePath"></param>
     public void play(string resourceAudioRelativePath) {
-        if(mute) { return; }
         AudioSource aud = getSource(resourceAudioRelativePath);
-        if(aud) { aud.Play(); }
+        play(aud);
+    }
+
+    public void play(AudioSource aus) {
+        if(mute) { return; }
+        if(aus) { aus.Play(); }
     }
 
     private void stopAll() {
@@ -65,4 +69,6 @@ public class AudioManager : PhoenixLikeSingleton<AudioManager> {
         audios.Add(go.name, aud);
         return aud;
     }
+
+
 }

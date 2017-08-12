@@ -53,11 +53,11 @@ public class AlphaNumericInput : MonoBehaviour {
     public Action<string, Action<bool, MLUpdaterSet>> handleInput;
 
     [SerializeField]
-    private string buttonPressAudio = "short-beep";
+    private AudioSource buttonPressAudio;
     [SerializeField]
-    private string validCodeFeedbackAudio = "correct";
+    private AudioSource validCodeFeedbackAudio;
     [SerializeField]
-    private string invalideCodeFeedbackAudio = "short-record-scratch";
+    private AudioSource invalidCodeFeedbackAudio;
 
     private bool processingInput;
     [SerializeField]
@@ -108,7 +108,7 @@ public class AlphaNumericInput : MonoBehaviour {
         if (clear) {
             processingInput = true;
             if(!upSet) {
-                AudioManager.Instance.play(invalideCodeFeedbackAudio);
+                AudioManager.Instance.play(invalidCodeFeedbackAudio);
             } else {
                 AudioManager.Instance.play(validCodeFeedbackAudio);
             }
