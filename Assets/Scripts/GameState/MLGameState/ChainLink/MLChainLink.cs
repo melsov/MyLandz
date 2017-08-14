@@ -103,8 +103,11 @@ public struct LinkFilter
 {
     public enum FilterType
     {
-        PASS_AS_IS, FLOAT_TO_BOOL, SCALE_ADD, SCALE_ADD_MOD
+        PASS_AS_IS, FLOAT_TO_BOOL, SCALE_ADD, SCALE_ADD_MOD, SCALE_ADD_MOD_ROUND, SCALE_MOD_ADD_FLOOR
     }
+    [SerializeField]
+    private FilterType type;
+
     [SerializeField, Header("Used with scaled and add")]
     private float scale;
     [SerializeField, Header("Used with scaled and add")]
@@ -112,9 +115,6 @@ public struct LinkFilter
     [SerializeField, Header("Used with scaled add mod")]
     private float mod;
 
-
-    [SerializeField]
-    private FilterType type;
     public MLNumericParam filter(MLNumericParam param) {
         switch(type) {
             case FilterType.PASS_AS_IS:
@@ -125,7 +125,11 @@ public struct LinkFilter
             case FilterType.SCALE_ADD:
                 return param * scale + add;
             case FilterType.SCALE_ADD_MOD:
-                return MPMath.fmod(param * scale + add, mod);
+                return MLMath.fmod(param * scale + add, mod);
+            case FilterType.SCALE_ADD_MOD_ROUND:
+                return Mathf.Round(MLMath.fmod(param * scale + add, mod));
+            case FilterType.SCALE_MOD_ADD_FLOOR:
+                return Mathf.Floor(MLMath.fmod(param * scale + add, mod));
         }
     }
 }
@@ -151,9 +155,7 @@ public class MLChainLink : MonoBehaviour
     public virtual void link(ChainLinkData data) {
         if (condition.doesPass(data.getData())) {
             MLNumericParam passOn = filter.filter(data.getData());
-            Debug.Log("pass on data: " + passOn.ToString());
             target_.enforce(passOn);
-            //target_.enforce(filter.filter(data.getData()));
         }
     }
     

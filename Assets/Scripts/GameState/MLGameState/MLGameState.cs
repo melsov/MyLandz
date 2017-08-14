@@ -89,8 +89,14 @@ public struct MLNumericParam
 {
     public float value_;
 
+    public bool Bool {
+        get {
+            return Mathf.Abs(value_) > .0001f;
+        }
+    }
+
     public static implicit operator int(MLNumericParam mlp) { return Mathf.RoundToInt(mlp.value_); }
-    public static implicit operator bool(MLNumericParam mlp) { return Mathf.Abs(mlp.value_) > .001f; }
+    public static implicit operator bool(MLNumericParam mlp) { return mlp.Bool; }
     public static implicit operator float(MLNumericParam mlp) { return mlp.value_; }
 
     public static implicit operator MLNumericParam(int i) { return new MLNumericParam(i); }

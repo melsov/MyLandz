@@ -33,3 +33,12 @@ public class Watchable<T>
         }
     }
 }
+
+public class WatchableWrapper<T>
+{
+    public readonly Watchable<T> watchable;
+
+    public WatchableWrapper(T val) { // Watchable<T> watchable) {
+        watchable = new Watchable<T>(val);
+    }
+}

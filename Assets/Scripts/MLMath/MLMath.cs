@@ -1,7 +1,7 @@
 ﻿using UnityEngine;
 using System;
 
-public static class MPMath
+public static class MLMath
 {
 
     public static float fmod(float value, float mod) {
