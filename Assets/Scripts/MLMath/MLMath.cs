@@ -8,4 +8,8 @@ public static class MLMath
         if(Mathf.Abs(mod) < Mathf.Epsilon) { return 0f; }
         return value - (float)Math.Truncate(value / mod) * mod;
     }
+
+    internal static bool SomewhatCloseValues(float a, float b) {
+        return Mathf.Abs(a - b) < .001f;
+    }
 }

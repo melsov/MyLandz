@@ -19,7 +19,7 @@ public class Watchable<T>
         }
     }
 
-    public void addListender(Action<T> a) { watchers.Add(a); }
+    public void addListener(Action<T> a) { watchers.Add(a); }
 
     public T val {
         get {
@@ -38,7 +38,15 @@ public class WatchableWrapper<T>
 {
     public readonly Watchable<T> watchable;
 
-    public WatchableWrapper(T val) { // Watchable<T> watchable) {
-        watchable = new Watchable<T>(val);
+    public WatchableWrapper(Watchable<T> watchable) {
+        this.watchable = watchable;
+    }
+
+    public void addListener(Action<T> a) { watchable.addListener(a); }
+
+    public T val {
+        get {
+            return watchable.val;
+        }
     }
 }

@@ -5,6 +5,7 @@ using System.Text;
 using UnityEngine;
 using UnityEditor;
 using UnityEngine.SceneManagement;
+using System.Collections;
 
 /*
 NOTES:
@@ -46,12 +47,13 @@ MLGameState callbacks would...
 public class MLGameStateDataEditor : Editor
 {
     public override void OnInspectorGUI() {
-        
+        MLGameState gs = (MLGameState)target;
+        gs.editorUpdate = () => { Repaint(); };
+        paramLabel();
+
         base.OnInspectorGUI();
-        GUIStyle style = EditorStyles.helpBox;
-        //style.normal.background. = new Color(.3f, .4f, .8f);
-        GUI.contentColor = Color.red;
-        EditorGUILayout.BeginVertical(style); // style);
+
+        EditorGUILayout.BeginVertical(EditorStyles.helpBox); // style);
         EditorGUILayout.LabelField("----Game State Tools----");
 
         if(GUILayout.Button("Add MLGameStateParamUpdater")) {
@@ -62,6 +64,15 @@ public class MLGameStateDataEditor : Editor
         }
 
         EditorGUILayout.EndVertical();
+    }
+
+    private void paramLabel() {
+        Color normal = GUI.backgroundColor;
+        GUI.backgroundColor = new Color(.3f, .8f, .9f);
+        EditorGUILayout.BeginVertical(EditorStyles.helpBox);
+        EditorGUILayout.LabelField(string.Format("Param: {0}", (float)((MLGameState)target).param));
+        EditorGUILayout.EndVertical();
+        GUI.backgroundColor = normal;
     }
 
     private MLGameState mlGameState { get { return (MLGameState)target; } }
@@ -133,10 +144,30 @@ public abstract class MLGameState : MonoBehaviour
     [SerializeField]
     private List<MLChainLink> chainLinks;
 
-    public virtual void Awake() { }
+    private void Awake() {
+        _Awake();
+    }
 
-    public virtual void Start() {
-        gameStateSaver.reinstateFromPrefs(this);
+    protected virtual void _Awake() { }
+
+    private void Start() {
+        _Start();
+    }
+
+    protected virtual void _Start() {
+        //recover param early
+        if(gameStateSaver.type != MLGameSavedStateType.DONT_SAVE) {
+            param = gameStateSaver.fromPrefs(this);
+            gameStateSaver.writeToPrefs(this);
+        }
+        //notify chainlinks a little later
+        StartCoroutine(lateStart());
+    }
+
+    private IEnumerator lateStart() {
+        yield return new WaitForSeconds(1f);
+        notifyChainLinks();
+        //enforce(gameStateSaver.fromPrefs(this));
     }
 
     private string _key;
@@ -158,12 +189,31 @@ public abstract class MLGameState : MonoBehaviour
     public void enforce(MLNumericParam _mlnp) {
         param = _mlnp;
         gameStateSaver.writeToPrefs(this);
-        foreach(MLChainLink link in chainLinks) {
+        notifyChainLinks();
+
+        //Editor
+        callEditorUpdate();
+    }
+
+    protected void notifyChainLinks() {
+        foreach (MLChainLink link in chainLinks) {
             if (link) {
                 link.link(getChainLinkDataFor(link));
             }
         }
     }
+
+    #region EditorUpdate
+
+    //courtesy: http://www.voidbred.com/blog/2014/12/auto-updating-custom-inspectors-for-unity/
+    public Action editorUpdate;
+    [System.Diagnostics.Conditional("UNITY_EDITOR")]
+    void callEditorUpdate() {
+        if(null != editorUpdate) {
+            editorUpdate.Invoke();
+        }
+    }
+    #endregion
 }
 
 public static class HierarchyHelper
@@ -173,6 +223,13 @@ public static class HierarchyHelper
         while(result.parent) {
             result = result.parent;
             yield return result;
+        }
+    }
+
+    public static IEnumerable<Transform> ChildrenRecursive(Transform t) {
+        foreach(Transform child in t) {
+            yield return child;
+            ChildrenRecursive(child);
         }
     }
 

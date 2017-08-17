@@ -5,42 +5,45 @@ using System.Linq;
 using System.Text;
 using UnityEngine.Assertions;
 
-//#if UNITY_EDITOR
-//using UnityEditor;
-//[CustomEditor(typeof(MLLogicGate))]
-//public class MLLogicGateDataEditor : Editor
-//{
-//    public List<Transform> objects = new List<Transform>();
-//    private Component a, b;
 
-//    public override void OnInspectorGUI() {
-//        setupAndShowInputs();
-//        base.OnInspectorGUI();
-//    }
+using UnityEditor;
+using System.Reflection;
+using System.Collections;
 
-//    private void setupAndShowInputs() {
-//        //FIXME: brutally ugly
-//        MLLogicGate gate = (MLLogicGate)target;
-//        WatchableBoolProvider[] inputs = gate.getInputs();
-//        if(inputs == null || inputs.Length == 0) { inputs = new WatchableBoolProvider[2]; }
-//        a = inputs[0] != null ? inputs[0] as Component : null;
-//        b = inputs[1] != null ? inputs[1] as Component : null;
-//        a = (Component) EditorGUILayout.ObjectField("input a: ", a, typeof(Component), true);
-//        b = (Component)EditorGUILayout.ObjectField("input b: ", b, typeof(Component), true);
-//        gate.setInputs(new WatchableBoolProvider[] {
-//            a ? a.GetComponent<WatchableBoolProvider>() : null,
-//            b ? b.GetComponent<WatchableBoolProvider>() : null
-//        });
-//    }
-//}
-//#endif
+[CustomEditor(typeof(MLLogicGate))]
+public class MLLogicGateDataEd : Editor
+{
+    public override void OnInspectorGUI() {
+        MLLogicGate state = (MLLogicGate)target;
+        try {
+            EditorGUIHelper.guiColorForState(state.transform, state.state, Color.green, new Color(.3f, .8f, .8f));
+        } catch (Exception e) {
 
+        }
+        base.OnInspectorGUI();
+    }
+}
 
 public class MLLogicGate : MonoBehaviour
 {
+    [System.Serializable]
+    struct BoolInput
+    {
+        public MLBooleanGameState state;
+        public bool invert;
+        
+        public bool evaluate() { return invert != state.getWatchableBool().val; }
 
+        public static implicit operator bool(BoolInput b) { return b.state; }
+    }
+
+#if UNITY_EDITOR
+    public void setInputsToDefaults() {
+        inputs = new BoolInput[2];
+    }
+#endif
     [SerializeField]
-    private MLBooleanGameState[] inputs;
+    private BoolInput[] inputs;
 
 
     [SerializeField]
@@ -60,27 +63,34 @@ public class MLLogicGate : MonoBehaviour
 
     private void Start() {
         Assert.IsTrue(hasInputs);
-        foreach(MLBooleanGameState input in inputs) {
-            input.getWatchableBool().addListender((bool b) => {
+        foreach(BoolInput input in inputs) {
+            input.state.getWatchableBool().addListener((bool b) => {
                 eval();
             });
         }
     }
 
-    private bool getInput(int index) { return inputs[index].getWatchableBool().val; }
+
+    private bool getInput(int index) { return inputs[index].evaluate(); }
+
+    public bool state {
+        get {
+            return gate.eval(getInput(0), getInput(1));
+        }
+    }
 
     private void eval() {
         if(!hasInputs) { return; }
         if (target_) {
-            target_.enforce(gate.eval(getInput(0), getInput(1)));
+            target_.enforce(state); 
         }
     }
 
     protected virtual bool hasInputs {
         get {
             if(inputs.Length != 2) { return false; }
-            foreach(MLBooleanGameState input in inputs) {
-                if(input == null) { return false; }
+            foreach(BoolInput input in inputs) {
+                if(!input) { return false; }
             }
             return true;
         }

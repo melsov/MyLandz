@@ -14,6 +14,6 @@ public class WatchableIntProvider : MonoBehaviour
     }
 
     public void addOnChangeListener(Action<int> a) {
-        storage.addListender(a);
+        storage.addListener(a);
     }
 }

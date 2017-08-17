@@ -12,6 +12,8 @@ public class DragRotate : Interactable
 
     [SerializeField]
     private MLUpdaterSet updaterSet;
+    [SerializeField]
+    private bool updateDuringDrag;
 
     private float angOffset;
     private Vector3 eulers;
@@ -48,6 +50,9 @@ public class DragRotate : Interactable
         eulers = transform.rotation.eulerAngles;
         eulers.z = CursorHelper.angleDegreesWithCursorXY(transform.position) + angOffset;
         transform.rotation = Quaternion.Euler(eulers);
+        if(updateDuringDrag && updaterSet) {
+            updaterSet.Invoke();
+        }
     }
 
     protected override void OnMouseUp() {

@@ -25,6 +25,7 @@ public class Highlightable : Hoverable {
     }
 
     public void highlight(bool _highlight) {
+        if(!rendrr || !rendrr.material || !rendrr.gameObject.activeSelf) { return; }
         rendrr.material.SetFloat("_OutlineScale", _highlight ? 1f : 0f);
         if(!highlightOnCursorHover) {
             if(_highlight) {

@@ -66,7 +66,7 @@ public class WatchableFloatProvider : MonoBehaviour
     }
 
     public void addOnChangeListener(Action<float> a) {
-        storage.addListender(a);
+        storage.addListener(a);
     }
 
 

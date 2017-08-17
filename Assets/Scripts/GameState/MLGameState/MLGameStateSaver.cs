@@ -29,10 +29,17 @@ public struct MLGameStateSaver
     }
 
     public void reinstateFromPrefs(MLGameState mlGameState) {
-        MLNumericParam param;
+        if(type == MLGameSavedStateType.DONT_SAVE) {
+            return;
+        }
+        mlGameState.enforce(fromPrefs(mlGameState));
+    }
+
+    public MLNumericParam fromPrefs(MLGameState mlGameState) {
+        MLNumericParam param = default(MLNumericParam);
         switch(type) {
             case MLGameSavedStateType.DONT_SAVE:
-                return;
+                break;
             case MLGameSavedStateType.SAVE_BOOL:
             case MLGameSavedStateType.SAVE_INT:
                 param = new MLNumericParam(PlayerPrefs.GetInt(mlGameState.key));
@@ -42,6 +49,6 @@ public struct MLGameStateSaver
                 param = new MLNumericParam(PlayerPrefs.GetFloat(mlGameState.key));
                 break;
         }
-        mlGameState.enforce(param);
+        return param;
     }
 }

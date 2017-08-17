@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using UnityEditor;
 using UnityEngine.Assertions;
+using System;
 
 //[CustomEditor(typeof(MLChainLink))]
 //public class ChainLinkDataEditor : Editor
@@ -76,13 +77,15 @@ public struct ParamCondition
 {
     public enum ConditionType
     {
-        PASS_ANY, ONLY_TRUE, INT_EQUALS
+        PASS_ANY, ONLY_TRUE, INT_EQUALS,
+        FLOAT_GREATER_THAN,
     }
 
     public ConditionType type;
 
     [Header("Used with INT_EQUALS")]
     public int equalsCondition;
+    public float paramGreaterThan;
 
     public bool doesPass(MLNumericParam param) {
         switch(type) {
@@ -92,7 +95,10 @@ public struct ParamCondition
             case ConditionType.ONLY_TRUE:
                 return param == true;
             case ConditionType.INT_EQUALS:
-                return ((int)param) == equalsCondition;
+                return param == equalsCondition;
+            case ConditionType.FLOAT_GREATER_THAN:
+                Debug.Log(string.Format("param: {0} greater than {1} : {2}", param.value_, paramGreaterThan, param.value_ > paramGreaterThan));
+                return param > paramGreaterThan;
         }
     }
 }
@@ -101,9 +107,14 @@ public struct ParamCondition
 [System.Serializable]
 public struct LinkFilter
 {
+    [SerializeField]
+    private bool debug;
+
     public enum FilterType
     {
-        PASS_AS_IS, FLOAT_TO_BOOL, SCALE_ADD, SCALE_ADD_MOD, SCALE_ADD_MOD_ROUND, SCALE_MOD_ADD_FLOOR
+        PASS_AS_IS, FLOAT_TO_BOOL, SCALE_ADD, SCALE_ADD_MOD, SCALE_ADD_CLAMP, SCALE_ADD_MOD_ROUND,
+        SCALE_ADD_MOD_FLOOR, SCALE_ADD_MOD_CEIL, SCALE_ADD_MOD_OFFSET,
+        FLOAT_TO_BOOL_INVERT, TRUE_IF_EQUALS_AS_INT,
     }
     [SerializeField]
     private FilterType type;
@@ -114,33 +125,106 @@ public struct LinkFilter
     private float add;
     [SerializeField, Header("Used with scaled add mod")]
     private float mod;
+    [SerializeField, Header("Used with scale add mod offset")]
+    private float offset;
+    [SerializeField]
+    private int intCompare;
+    [System.Serializable]
+    struct ClampRange
+    {
+        public float min, max;
+    }
+    [SerializeField]
+    private ClampRange clampRange;
 
     public MLNumericParam filter(MLNumericParam param) {
+        if(debug) {
+            return debugFilter((float)param);
+        }
         switch(type) {
             case FilterType.PASS_AS_IS:
             default:
                 return param;
             case FilterType.FLOAT_TO_BOOL:
-                return Mathf.Abs((float)param) > 0.001f ? 1f : 0f;
+                return param.Bool ? 1f : 0f;
             case FilterType.SCALE_ADD:
                 return param * scale + add;
             case FilterType.SCALE_ADD_MOD:
                 return MLMath.fmod(param * scale + add, mod);
+            case FilterType.SCALE_ADD_CLAMP:
+                return Mathf.Clamp(param * scale + add, clampRange.min, clampRange.max);
             case FilterType.SCALE_ADD_MOD_ROUND:
                 return Mathf.Round(MLMath.fmod(param * scale + add, mod));
-            case FilterType.SCALE_MOD_ADD_FLOOR:
+            case FilterType.SCALE_ADD_MOD_FLOOR:
                 return Mathf.Floor(MLMath.fmod(param * scale + add, mod));
+            case FilterType.SCALE_ADD_MOD_CEIL:
+                return Mathf.Ceil(MLMath.fmod(param * scale + add, mod));
+            case FilterType.SCALE_ADD_MOD_OFFSET:
+                return MLMath.fmod(param * scale + add, mod) + offset;
+            case FilterType.FLOAT_TO_BOOL_INVERT:
+                return param.Bool ? 0f : 1f;
+            case FilterType.TRUE_IF_EQUALS_AS_INT:
+                return (int)param.value_ == intCompare ? 1f : 0f;
         }
+    }
+
+    private MLNumericParam debugFilter(DebugableFloat param_) {
+        DebugableFloat param = param_;
+        param = param * scale + add;
+        param.debug();
+        switch(type) {
+//DEBUG
+            case FilterType.PASS_AS_IS:
+            default:
+                return (float)param_;
+            case FilterType.FLOAT_TO_BOOL:
+                param = Mathf.Abs((float)param) > 0.001f ? 1f : 0f;
+                break;
+            case FilterType.SCALE_ADD:
+                break;
+            case FilterType.SCALE_ADD_MOD:
+                param = MLMath.fmod(param, mod);
+                break;
+            case FilterType.SCALE_ADD_CLAMP:
+                param = Mathf.Clamp(param, clampRange.min, clampRange.max);
+                break;
+            case FilterType.SCALE_ADD_MOD_ROUND:
+                param = Mathf.Round(MLMath.fmod(param, mod));
+                break;
+            case FilterType.SCALE_ADD_MOD_FLOOR:
+                param = Mathf.Floor(MLMath.fmod(param, mod));
+                break;
+            case FilterType.SCALE_ADD_MOD_CEIL:
+                param = Mathf.Ceil(MLMath.fmod(param, mod));
+                break;
+            case FilterType.SCALE_ADD_MOD_OFFSET:
+                param = MLMath.fmod(param, mod) + offset;
+                break;
+//DEBUG
+        }
+        return (float)param;
     }
 }
 
 public class MLChainLink : MonoBehaviour
 {
+#if UNITY_EDITOR
+    [SerializeField]
+    private bool debug;
+    protected void DBUG(string s) { if (debug) Debug.Log(s); }
+#endif
+
     [SerializeField]
     protected ParamCondition condition;
     [SerializeField]
-    private LinkFilter filter;
-    
+    protected LinkFilter filter;
+
+    private void Start() {
+        _Start();
+    }
+
+    protected virtual void _Start() { }
+
     [SerializeField, Header("If none, this")]
     protected MLGameState _target;
     protected MLGameState target_ {

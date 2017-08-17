@@ -34,8 +34,8 @@ public class MLItemState : MLGameState {
     }
 
 
-    public override void Awake() {
-        base.Awake();
+    protected override void _Awake() {
+        base._Awake();
         if(!GetComponent<MLGameStateParamUpdater>()) {
             MLGameStateParamUpdater mlgsp = gameObject.AddComponent<MLGameStateParamUpdater>();
             mlgsp.onValue = 1f;
@@ -43,8 +43,8 @@ public class MLItemState : MLGameState {
         }
     }
 
-    public override void Start() {
-        base.Start();
+    protected override void _Start() {
+        base._Start();
         gameStateSaver.type = MLGameSavedStateType.SAVE_INT;
     }
 

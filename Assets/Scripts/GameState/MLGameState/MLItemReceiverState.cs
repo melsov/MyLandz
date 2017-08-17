@@ -29,8 +29,8 @@ public class MLItemReceiverState : MLGameState {
         get { if (!_itemReceiver) { _itemReceiver = GetComponent<ItemReceiver>(); } return _itemReceiver; }
     }
 
-    public override void Awake() {
-        base.Awake();
+    protected override void _Awake() {
+        base._Awake();
         if(!GetComponent<MLGameStateParamUpdater>()) {
             MLGameStateParamUpdater mlgsp = gameObject.AddComponent<MLGameStateParamUpdater>();
             mlgsp.onValue = 1f;

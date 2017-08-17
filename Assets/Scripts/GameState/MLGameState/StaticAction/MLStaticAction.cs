@@ -8,8 +8,8 @@ public abstract class MLStaticAction : MLGameState {
     [SerializeField, Header("Add an updater set for only this action")]
     private bool addUpdater = true;
 
-    public override void Awake() {
-        base.Awake();
+    protected override void _Awake() {
+        base._Awake();
         gameStateSaver.type = MLGameSavedStateType.DONT_SAVE;
         MLGameStateParamUpdater paramUpdater = ComponentHelper.AddIfNotPresent<MLGameStateParamUpdater>(transform);
         if(addUpdater) {
